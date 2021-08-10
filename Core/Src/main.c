@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -26,11 +27,16 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "stdio.h"
+#include "oled.h"
+#include "hc05.h"
+#include "math.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+TxPack txpack;
+RxPack rxpack;
+float  kP,kI,kD;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -56,11 +62,11 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int __io_putchar(int ch) {
-    uint8_t temp[1] = {ch};
-    HAL_UART_Transmit(&huart1, temp, 1, 0xff);
-    return (ch);
-}
+//int __io_putchar(int ch) {
+//    uint8_t temp[1] = {ch};
+//    HAL_UART_Transmit(&huart1, temp, 1, 0xff);
+//    return (ch);
+//}
 /* USER CODE END 0 */
 
 /**
@@ -69,7 +75,9 @@ int __io_putchar(int ch) {
   */
 int main(void) {
     /* USER CODE BEGIN 1 */
-
+    int i = 0;
+    int motor,dir1;
+    int dir2;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -94,18 +102,17 @@ int main(void) {
     MX_TIM3_Init();
     MX_USART1_UART_Init();
     MX_TIM4_Init();
+    MX_I2C1_Init();
+    MX_I2C2_Init();
     /* USER CODE BEGIN 2 */
 
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);
-    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 500);
-
-    HAL_GPIO_WritePin(AIN1_GPIO_Port, AIN1_Pin, GPIO_PIN_RESET);
-    HAL_GPIO_WritePin(AIN2_GPIO_Port, AIN2_Pin, GPIO_PIN_SET);
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);  //pwm输出
 
     HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
     HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
     __HAL_TIM_SET_COUNTER(&htim3, 32768);
     __HAL_TIM_SET_COUNTER(&htim4, 32768);
+    HAL_UART_Receive_IT(&huart1, (uint8_t *) &uartByte, 1);
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -113,10 +120,29 @@ int main(void) {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
     while (1) {
-        printf("hello word: %lu \r\n", __HAL_TIM_GetCounter(&htim3));
-        HAL_Delay(100);
+        if (readValuePack(&rxpack)) {
 
+            motor=rxpack.integers[0];
+            dir1 =rxpack.integers[1];
+            dir2 =rxpack.integers[2];
+
+            kP = (float)(rxpack.floats[0]);
+            kI = (float)(rxpack.floats[1]);
+            kD = (float)(rxpack.floats[2]);
+
+            sendValuePack(&txpack);
+        }
+
+        txpack.floats[0] = 100;
+        txpack.floats[1] = dir1;///kD;//20 * sin(i / 127.0 * 3.1415926);
+        txpack.floats[2] = 50;  //测试
+
+
+        HAL_Delay(10);
+//        printf("hello word: %lu \r\n", __HAL_TIM_GetCounter(&htim3));
+//        HAL_Delay(100);
         /* USER CODE END WHILE */
+
         /* USER CODE BEGIN 3 */
     }
 #pragma clang diagnostic pop
