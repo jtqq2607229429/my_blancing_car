@@ -26,17 +26,18 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "stdio.h"
-#include "oled.h"
+//#include "oled.h"
 #include "hc05.h"
 #include "math.h"
+#include "mpu6050.h"
+#include "oled.h"
+#include "pid.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-TxPack txpack;
-RxPack rxpack;
-float  kP,kI,kD;
+float kP, kI, kD;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -75,9 +76,6 @@ void SystemClock_Config(void);
   */
 int main(void) {
     /* USER CODE BEGIN 1 */
-    int i = 0;
-    int motor,dir1;
-    int dir2;
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -104,43 +102,42 @@ int main(void) {
     MX_TIM4_Init();
     MX_I2C1_Init();
     MX_I2C2_Init();
+    MX_TIM1_Init();
     /* USER CODE BEGIN 2 */
 
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);  //pwm输出
+    OLED_Init();
+    OLED_Clear();
+    OLED_ShowString(0, 1, "hollo!", 12);
+    OLED_ShowString(0, 2, "kP:", 12);
+    OLED_ShowString(0, 3, "kD:", 12);
+    OLED_ShowString(0, 4, "kI:", 12);
 
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);  //pwm输出
     HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
     HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
     __HAL_TIM_SET_COUNTER(&htim3, 32768);
-    __HAL_TIM_SET_COUNTER(&htim4, 32768);
-    HAL_UART_Receive_IT(&huart1, (uint8_t *) &uartByte, 1);
-    /* USER CODE END 2 */
+    __HAL_TIM_SET_COUNTER(&htim4, 32768);  // 编码器打开
 
+    MPU6050_initialize();
+    DMP_Init();                                                   //等待6050初始化完成
+
+    HAL_UART_Receive_IT(&huart1, (uint8_t *) &uartByte, 1);  //蓝牙接收打开
+
+    HAL_TIM_Base_Start_IT(&htim1);                               //定时器中断打开
+
+    PID_Init(&Rp_A_PID, 1, 1, 1);
+    PID_Init(&Rp_P_PID, 1, 1, 1);
+    /* USER CODE END 2 */
     /* Infinite loop */
+
     /* USER CODE BEGIN WHILE */
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
     while (1) {
-        if (readValuePack(&rxpack)) {
+        OLED_ShowNum(36, 2, (int) (kP * 100), 12);
+        OLED_ShowNum(36, 3, (int) (kI * 100), 12);
+        OLED_ShowNum(36, 4, (int) (kD * 100), 12);
 
-            motor=rxpack.integers[0];
-            dir1 =rxpack.integers[1];
-            dir2 =rxpack.integers[2];
-
-            kP = (float)(rxpack.floats[0]);
-            kI = (float)(rxpack.floats[1]);
-            kD = (float)(rxpack.floats[2]);
-
-            sendValuePack(&txpack);
-        }
-
-        txpack.floats[0] = 100;
-        txpack.floats[1] = dir1;///kD;//20 * sin(i / 127.0 * 3.1415926);
-        txpack.floats[2] = 50;  //测试
-
-
-        HAL_Delay(10);
-//        printf("hello word: %lu \r\n", __HAL_TIM_GetCounter(&htim3));
-//        HAL_Delay(100);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */

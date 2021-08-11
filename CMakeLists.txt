@@ -46,7 +46,7 @@ else ()
     add_compile_options(-Og -g)
 endif ()
 
-include_directories(Core/Inc Drivers/STM32F1xx_HAL_Driver/Inc Drivers/STM32F1xx_HAL_Driver/Inc/Legacy Drivers/CMSIS/Device/ST/STM32F1xx/Include Drivers/CMSIS/Include Hardwares/Mpu6050/DMP Hardwares/Mpu6050/filter Hardwares/Mpu6050/MPU6050 Hardwares/Mpu6050/MYIIC Hardwares/motor Hardwares/OLED)
+include_directories(Core/Inc Drivers/STM32F1xx_HAL_Driver/Inc Drivers/STM32F1xx_HAL_Driver/Inc/Legacy Drivers/CMSIS/Device/ST/STM32F1xx/Include Drivers/CMSIS/Include Hardwares/Mpu6050/DMP Hardwares/Mpu6050/filter Hardwares/Mpu6050/MPU6050 Hardwares/Mpu6050/MYIIC Hardwares/motor Hardwares/OLED_SSD1306_i2c)
 include_directories(Core/Inc Drivers/STM32F1xx_HAL_Driver/Inc Drivers/STM32F1xx_HAL_Driver/Inc/Legacy Drivers/CMSIS/Device/ST/STM32F1xx/Include Drivers/CMSIS/Include Hardwares/HC05)
 add_definitions(-DUSE_HAL_DRIVER -DSTM32F103xB)
 

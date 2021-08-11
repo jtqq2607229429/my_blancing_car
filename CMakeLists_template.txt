@@ -45,7 +45,7 @@ else ()
     add_compile_options(-Og -g)
 endif ()
 
-include_directories(${includes} Hardwares/Mpu6050/DMP Hardwares/Mpu6050/filter Hardwares/Mpu6050/MPU6050 Hardwares/Mpu6050/MYIIC Hardwares/motor Hardwares/OLED)
+include_directories(${includes} Hardwares/Mpu6050/DMP Hardwares/Mpu6050/filter Hardwares/Mpu6050/MPU6050 Hardwares/Mpu6050/MYIIC Hardwares/motor Hardwares/OLED_SSD1306_i2c)
 include_directories(${includes} Hardwares/HC05)
 add_definitions(${defines})
 
