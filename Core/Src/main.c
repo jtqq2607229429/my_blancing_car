@@ -113,6 +113,7 @@ int main(void) {
     OLED_ShowString(0, 4, "kI:", 12);
 
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);  //pwm输出
+
     HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
     HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
     __HAL_TIM_SET_COUNTER(&htim3, 32768);
@@ -123,10 +124,10 @@ int main(void) {
 
     HAL_UART_Receive_IT(&huart1, (uint8_t *) &uartByte, 1);  //蓝牙接收打开
 
-    HAL_TIM_Base_Start_IT(&htim1);                               //定时器中断打开
+    HAL_TIM_Base_Start_IT(&htim1);                                //定时器中断打开
 
     PID_Init(&Rp_A_PID, 1, 1, 1);
-    PID_Init(&Rp_P_PID, 1, 1, 1);
+    PID_Init(&Rp_P_PID, 1, 1, 1);                      //pid参数初始化
     /* USER CODE END 2 */
     /* Infinite loop */
 
@@ -137,9 +138,7 @@ int main(void) {
         OLED_ShowNum(36, 2, (int) (kP * 100), 12);
         OLED_ShowNum(36, 3, (int) (kI * 100), 12);
         OLED_ShowNum(36, 4, (int) (kD * 100), 12);
-
         /* USER CODE END WHILE */
-
         /* USER CODE BEGIN 3 */
     }
 #pragma clang diagnostic pop

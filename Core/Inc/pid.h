@@ -20,6 +20,6 @@ void PID_Init(PID_struct *PID,float kp,float ki,float kd);
 float PID_calc_A(PID_struct *PID,float e);
 float PID_calc_P(PID_struct *PID,float e);
 void PID_Clear();
-float get_error(int target,int now);
+float get_error(float target,float now);
 
 #endif //ROTARYINVERTEDPENDULUM_PID_H

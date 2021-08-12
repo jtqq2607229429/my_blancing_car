@@ -6,7 +6,7 @@
 PID_struct Rp_A_PID;
 PID_struct Rp_P_PID;
 
-float get_error(int target, int now) {
+float get_error(float target, float now) {
     float error;
     error = target - now;
     return error;

@@ -9,40 +9,54 @@
 #include "hc05.h"
 #include "math.h"
 #include "mpu6050.h"
+#include "stdbool.h"
+#include "pid.h"
+#include "motor.h"
 
 extern float kP, kI, kD;
 
-int i = 0;
-int motor, dir1 = 0;
-float dir2 = 0;
+int motor, dir1,dir2 = 0;
+int out1,out2;          //初始化参数
+
+bool start_flag = false;  //启动
+
 TxPack txpack;
-RxPack rxpack;
+RxPack rxpack;  //蓝牙使用结构体
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == htim1.Instance) {
-        if (readValuePack(&rxpack)) {
-            if (rxpack.bools[0]) {
-                save();
-            } else {}                                         //保存参数进入flash
-            if (rxpack.bytes[0]) {
-            } else {
-                dir2 = 180.0;
-            }                                                 //启动
+        if (readValuePack(&rxpack)) {          //读蓝牙传输数据
             motor = rxpack.integers[0];
             dir1 = rxpack.integers[1];
             dir2 = rxpack.integers[2];
             kP = (float) (rxpack.floats[0]);
             kI = (float) (rxpack.floats[1]);
-            kD = (float) (rxpack.floats[2]);                              //获得一些设定值
-//            PID_Init(&Rp_A_PID, 1, 1, 1);
-//            PID_Init(&Rp_P_PID, 1, 1, 1);
+            kD = (float) (rxpack.floats[2]);                  //获得一些设定值
+
+            if (rxpack.bools[0]) {                            //将参数存入flash
+                save();
+            }
+
+            if (rxpack.bytes[0]) {                            //启动
+                start_flag = true;
+                PID_Init(&Rp_A_PID, kP, kI, kD);
+                PID_Init(&Rp_P_PID, kP, kI, kD);
+            } else {
+                start_flag = false;
+            }
+
         }
 
-        Read_DMP();
+        if (start_flag == true) {
+            Read_DMP(); //每10ms读一次6050数据
+            out1 = PID_calc_A(&Rp_A_PID, get_error(90, Pitch));
+            motor1(out1);
+            motor2(out1);
+        }
 
-        txpack.floats[0] = 20;  //out
+        txpack.floats[0] = out1;  //out
         txpack.floats[1] = Pitch;  //实际
-        txpack.floats[2] = 0;   //目标
+        txpack.floats[2] = 90;   //目标
         sendValuePack(&txpack);
     }
     HAL_TIM_Base_Start_IT(htim);
