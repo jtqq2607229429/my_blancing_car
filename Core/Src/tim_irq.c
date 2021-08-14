@@ -49,9 +49,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 
         if (start_flag == true) {
             Read_DMP(); //每10ms读一次6050数据
-            out1 = PID_calc_A(&Rp_A_PID, get_error(90, Pitch));
-            motor1(out1);
-            motor2(out1);
+            //out1 = PID_calc_A(&Rp_A_PID, get_error(90, Pitch));
+//            motor1(1000);
+//            motor2(1000);
+        }
+        else{
+            motor2(0);
+            motor1(0);
         }
 
         txpack.floats[0] = out1;  //out
