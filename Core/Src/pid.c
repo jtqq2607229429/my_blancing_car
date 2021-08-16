@@ -24,7 +24,7 @@ void PID_Init(PID_struct *PID, float kp, float ki, float kd)//  pid参数设置
     PID->out = 0;
 }
 
-float PID_calc_A(PID_struct *PID, float e)  //PID计算
+float PID_calc_A(PID_struct *PID, float e , float g)  //PID计算
 {
     PID->err = e;
     PID->integral += PID->err;
@@ -32,12 +32,12 @@ float PID_calc_A(PID_struct *PID, float e)  //PID计算
         PID->integral = 1000;
     if (PID->integral <= -1000)
         PID->integral = -1000;
-    if (PID->err >= -5 && PID->err <= 5)
+    if (PID->err >= -1 && PID->err <= 1)
         PID->integral = 0;
     PID->out = PID->Kp * PID->err +
-               PID->Ki * PID->integral +
-               PID->Kd * (PID->err - PID->err_last);
-    PID->err_last = PID->err;
+             //  PID->Ki * PID->integral +
+               PID->Kd * g;
+    //PID->err_last = PID->err;
     return PID->out;
 }
 
@@ -45,13 +45,11 @@ float Last_Position;
 
 float PID_calc_P(PID_struct *PID, float e)  //PID计算
 {
-    float Position_Bias, Position_Differential;
-    float Position_Least;
-
-    Position_Least = e;             //位置差值
+    float Position_Bias = 0, Position_Differential;
 
     Position_Bias *= 0.8;
-    Position_Bias += Position_Least * 0.2;                 // 一阶低通 Bias = 0.8*Bias + 位置差值*0.2
+
+    Position_Bias += e * 0.2;                 // 一阶低通 Bias = 0.8*Bias + 位置差值*0.2
 
     Position_Differential = Position_Bias - Last_Position;  // 偏差变化率
 
@@ -62,9 +60,12 @@ float PID_calc_P(PID_struct *PID, float e)  //PID计算
 
     return PID->out;
 }
-void PID_Clear(){
+void PID_Clear(PID_struct *PID){
     Last_Position = 0;
-
+    PID->err = 0;    //PID误差
+    PID->err_last = 0;   //上一次误差
+    PID->integral = 0;  //累计误差
+    PID->out = 0;
 }
 
 //float PID_calc_z_y(PID_struct *PID,float e)   //PID计算

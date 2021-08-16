@@ -15,8 +15,8 @@
 
 extern float kP, kI, kD;
 
-int motor, dir1,dir2 = 0;
-int out1,out2;          //初始化参数
+int motor, dir1, dir2 = 0;
+int out1, out2;          //初始化参数
 
 bool start_flag = false;  //启动
 
@@ -25,6 +25,17 @@ RxPack rxpack;  //蓝牙使用结构体
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
     if (htim->Instance == htim1.Instance) {
+        Read_DMP(); //每5ms读一次6050数据
+        if (Pitch >= -33 && Pitch <= 37 && start_flag == true) {
+            out1 = PID_calc_A(&Rp_A_PID, get_error(2, Pitch), gyro[1]);
+            motor1(-out1);
+            motor2(out1);
+        } else {
+            out1 = 0;
+            motor1(-out1);
+            motor2(out1);
+            PID_Clear(&Rp_A_PID);
+        }
         if (readValuePack(&rxpack)) {          //读蓝牙传输数据
             motor = rxpack.integers[0];
             dir1 = rxpack.integers[1];
@@ -44,26 +55,12 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
             } else {
                 start_flag = false;
             }
-
-        }
-
-        if (start_flag == true) {
-            Read_DMP(); //每10ms读一次6050数据
-            //out1 = PID_calc_A(&Rp_A_PID, get_error(90, Pitch));
-//            motor1(1000);
-//            motor2(1000);
-        }
-        else{
-            motor2(0);
-            motor1(0);
-        }
-
-        txpack.floats[0] = out1;  //out
-        txpack.floats[1] = Pitch;  //实际
-        txpack.floats[2] = 90;   //目标
+        }   //读蓝牙数据
+        txpack.floats[0] = kP;  //目标
+        txpack.floats[1] = out1;  //实际
+        txpack.floats[2] = get_error(2, Pitch);   //输出
         sendValuePack(&txpack);
     }
     HAL_TIM_Base_Start_IT(htim);
 }
-
 

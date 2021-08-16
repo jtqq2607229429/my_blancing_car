@@ -17,9 +17,10 @@ extern PID_struct Rp_A_PID;
 extern PID_struct Rp_P_PID;
 
 void PID_Init(PID_struct *PID,float kp,float ki,float kd);
-float PID_calc_A(PID_struct *PID,float e);
+float PID_calc_A(PID_struct *PID,float e,float g);
 float PID_calc_P(PID_struct *PID,float e);
-void PID_Clear();
 float get_error(float target,float now);
+void PID_Clear(PID_struct *PID);
+
 
 #endif //ROTARYINVERTEDPENDULUM_PID_H

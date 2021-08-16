@@ -106,29 +106,29 @@ int main(void) {
     /* USER CODE BEGIN 2 */
 
     MPU6050_initialize();
-    DMP_Init();                                                   //ç­‰å¾…6050åˆå§‹åŒ–å®Œï¿½?
+    DMP_Init();                                                   //ç»›å¤Šç·?6050é’æ¿†îé–æ §ç•¬é”???
 
-    OLED_Init();
-    OLED_Clear();
-    OLED_ShowString(0, 1, "hollo!", 12);
-    OLED_ShowString(0, 2, "kP:", 12);
-    OLED_ShowString(0, 3, "kD:", 12);
-    OLED_ShowString(0, 4, "kI:", 12);
+//    OLED_Init();
+//    OLED_Clear();
+//    OLED_ShowString(0, 1, "hollo!", 12);
+//    OLED_ShowString(0, 2, "kP:", 12);
+//    OLED_ShowString(0, 3, "kD:", 12);
+//    OLED_ShowString(0, 4, "kI:", 12);
 
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);  //pwmè¾“å‡º
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);  //pwmè¾“å‡º
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);  //pwmæˆæ’³åš?
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);  //pwmæˆæ’³åš?
 
     HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
     HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
     __HAL_TIM_SET_COUNTER(&htim3, 32768);
-    __HAL_TIM_SET_COUNTER(&htim4, 32768);  // ç¼–ç å™¨æ‰“ï¿½?
+    __HAL_TIM_SET_COUNTER(&htim4, 32768);  // ±àÂëÆ÷³õÊ¼»¯
 
-    HAL_UART_Receive_IT(&huart1, (uint8_t *) &uartByte, 1);  //è“ç‰™æ¥æ”¶æ‰“å¼€
+    HAL_UART_Receive_IT(&huart1, (uint8_t *) &uartByte, 1);  //À¶ÑÀ³õÊ¼»¯
 
-    HAL_TIM_Base_Start_IT(&htim1);                                //å®šæ—¶å™¨ä¸­æ–­æ‰“ï¿½?
+    HAL_TIM_Base_Start_IT(&htim1);                                //¶¨Ê±Æ÷
 
-    PID_Init(&Rp_A_PID, 1, 1, 1);
-    PID_Init(&Rp_P_PID, 1, 1, 1);                      //pidå‚æ•°åˆå§‹ï¿½?
+    //  PID_Init(&Rp_A_PID, 0, 0, 0);
+    //  PID_Init(&Rp_P_PID, 1, 1, 1);                      //pidé™å‚›æšŸé’æ¿†îé”???
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -136,10 +136,10 @@ int main(void) {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
     while (1) {
-        OLED_ShowNum(36, 2, (int) (kP * 100), 12);
-        OLED_ShowNum(36, 3, (int) (kI * 100), 12);
-        OLED_ShowNum(36, 4, (int) (kD * 100), 12);
-    //    OLED_ShowNum(36, 5, (int) (Pitch * 100), 12);
+//        OLED_ShowNum(36, 2, (int) (kP * 100), 12);
+//        OLED_ShowNum(36, 3, (int) (kI * 100), 12);
+//        OLED_ShowNum(36, 4, (int) (kD * 100), 12);
+//    //    OLED_ShowNum(36, 5, (int) (Pitch * 100), 12);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
