@@ -122,8 +122,9 @@ int main(void) {
     OLED_Clear();
     OLED_ShowString(0, 1, "hollo!", 12);
 
-//    OLED_ShowString(0, 3, "kD:", 12);
-//    OLED_ShowString(0, 4, "kI:", 12);
+    OLED_ShowNum(0,2,"kP:",12);
+    OLED_ShowString(0, 3, "kD:", 12);
+    OLED_ShowString(0, 4, "kI:", 12);
 
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);  //pwmÊùàÊí≥Âö
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);  //pwmÊùàÊí≥Âö?
@@ -138,7 +139,7 @@ int main(void) {
     HAL_UART_Receive_IT(&huart1, (uint8_t * ) & uartByte, 1);  //¿∂—¿≥ı ºªØ
 
     PID_Init(&Rp_A_PID, 250, 0, 0.8);
-    PID_Init(&Rp_P_PID, 80, 0.4, 0);                      //
+    PID_Init(&Rp_P_PID, 470, 2.35, 0);                      //
     HAL_TIM_Base_Start_IT(&htim1);
 
     /* USER CODE END 2 */

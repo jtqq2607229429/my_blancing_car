@@ -30,8 +30,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
         Encoder_Right = __HAL_TIM_GET_COUNTER(&htim3) - 5000;
         __HAL_TIM_SET_COUNTER(&htim3, 5000);  // 编码器初始化
         Encoder = Encoder_Right + Encoder_Left - 0;
-        if (Read_DMP() == 0 && t >= 200 &&
-            start_flag == true)                                       //每5ms读一次6050数据 给6050初始化时间
+        if (Read_DMP() == 0 && t >= 200 && start_flag == true)                                       //每5ms读一次6050数据 给6050初始化时间
         {
             a_pitch = get_error(0, Pitch);
             a_gyro = gyro[1];
