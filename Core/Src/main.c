@@ -32,11 +32,18 @@
 #include "mpu6050.h"
 #include "oled.h"
 #include "pid.h"
+#include "stdbool.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-float kP, kI, kD;
+float kP = 0, kI = 0, kD = 0;
+bool start_flag = false;  //启动
+extern long rdIndex, rxIndex, rx_pack_length;
+extern int Encoder_Left, Encoder_Right, Encoder;
+extern int t;
+TxPack txpack;
+RxPack rxpack;  //蓝牙使用结构体
 
 /* USER CODE END PTD */
 
@@ -76,6 +83,7 @@ void SystemClock_Config(void);
   */
 int main(void) {
     /* USER CODE BEGIN 1 */
+
     /* USER CODE END 1 */
 
     /* MCU Configuration--------------------------------------------------------*/
@@ -106,29 +114,33 @@ int main(void) {
     /* USER CODE BEGIN 2 */
 
     MPU6050_initialize();
+    HAL_Delay(200);
     DMP_Init();                                                   //缁涘绶?6050閸掓繂顫愰崠鏍х暚閿???
+    HAL_Delay(500);                                         //等待6050初始化
 
-//    OLED_Init();
-//    OLED_Clear();
-//    OLED_ShowString(0, 1, "hollo!", 12);
-//    OLED_ShowString(0, 2, "kP:", 12);
+    OLED_Init();
+    OLED_Clear();
+    OLED_ShowString(0, 1, "hollo!", 12);
+
 //    OLED_ShowString(0, 3, "kD:", 12);
 //    OLED_ShowString(0, 4, "kI:", 12);
 
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);  //pwm鏉堟挸鍤?
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);  //pwm鏉堟挸鍤
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);  //pwm鏉堟挸鍤?
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
+    __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
 
     HAL_TIM_Encoder_Start(&htim3, TIM_CHANNEL_ALL);
     HAL_TIM_Encoder_Start(&htim4, TIM_CHANNEL_ALL);
-    __HAL_TIM_SET_COUNTER(&htim3, 32768);
-    __HAL_TIM_SET_COUNTER(&htim4, 32768);  // 编码器初始化
+    __HAL_TIM_SET_COUNTER(&htim3, 5000);
+    __HAL_TIM_SET_COUNTER(&htim4, 5000);  // 编码器初始化
 
-    HAL_UART_Receive_IT(&huart1, (uint8_t *) &uartByte, 1);  //蓝牙初始化
+    HAL_UART_Receive_IT(&huart1, (uint8_t * ) & uartByte, 1);  //蓝牙初始化
 
-    HAL_TIM_Base_Start_IT(&htim1);                                //定时器
+    PID_Init(&Rp_A_PID, 250, 0, 0.8);
+    PID_Init(&Rp_P_PID, 80, 0.4, 0);                      //
+    HAL_TIM_Base_Start_IT(&htim1);
 
-    //  PID_Init(&Rp_A_PID, 0, 0, 0);
-    //  PID_Init(&Rp_P_PID, 1, 1, 1);                      //pid閸欏倹鏆熼崚婵嗩潗閿???
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -136,10 +148,38 @@ int main(void) {
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
     while (1) {
-//        OLED_ShowNum(36, 2, (int) (kP * 100), 12);
+        if (readValuePack(&rxpack)) {          //读蓝牙传输数据
+            kP = (float) (rxpack.floats[0]);
+            kI = (float) (rxpack.floats[1]);
+            kD = (float) (rxpack.floats[2]);                  //获得一些设定值
+            if (rxpack.bools[0]) {                            //将参数存入flash
+                save();
+            }
+            if (rxpack.bytes[0]) {                            //启动
+                start_flag = true;
+                PID_Init(&Rp_A_PID, kP, 0.0, kD);
+                PID_Init(&Rp_P_PID, kI, kI / 200.0, 0);
+            } else {
+                start_flag = false;
+            }
+        }
+        //读蓝牙数据
+
+        OLED_ShowNum(36, 2, kP, 12);
+        OLED_ShowNum(36, 3, kI, 12);
+        OLED_ShowNum(36, 4, kD, 12);
+        OLED_ShowNum(36, 5, Pitch, 12);
+        OLED_ShowNum(36, 6, rxIndex, 12);
+        OLED_ShowNum(36, 7, t, 12);
+        txpack.floats[0] = gyro[1];
+        txpack.floats[1] = Encoder_Right;
+        txpack.floats[2] = Encoder_Left;
+        sendValuePack(&txpack);
+//        OLED_ShowNum(36, 3, (int)(Pitch), 12);
+//        HAL_Delay(10);
 //        OLED_ShowNum(36, 3, (int) (kI * 100), 12);
 //        OLED_ShowNum(36, 4, (int) (kD * 100), 12);
-//    //    OLED_ShowNum(36, 5, (int) (Pitch * 100), 12);
+//        OLED_ShowNum(36, 5, (int) (Pitch * 100), 12);
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
