@@ -115,19 +115,18 @@ int main(void) {
 
     MPU6050_initialize();
     HAL_Delay(200);
-    DMP_Init();                                                   //缁涘绶?6050閸掓繂顫愰崠鏍х暚閿???
+    DMP_Init();                                                   //DMP6050初始化
     HAL_Delay(500);                                         //等待6050初始化
 
     OLED_Init();
     OLED_Clear();
     OLED_ShowString(0, 1, "hollo!", 12);
-
     OLED_ShowNum(0,2,"kP:",12);
     OLED_ShowString(0, 3, "kD:", 12);
     OLED_ShowString(0, 4, "kI:", 12);
 
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);  //pwm鏉堟挸鍤
-    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);  //pwm鏉堟挸鍤?
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_4);  //电机初始化
+    HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1);  //
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_1, 0);
     __HAL_TIM_SET_COMPARE(&htim2, TIM_CHANNEL_4, 0);
 
@@ -139,7 +138,8 @@ int main(void) {
     HAL_UART_Receive_IT(&huart1, (uint8_t * ) & uartByte, 1);  //蓝牙初始化
 
     PID_Init(&Rp_A_PID, 250, 0, 0.8);
-    PID_Init(&Rp_P_PID, 470, 2.35, 0);                      //
+    PID_Init(&Rp_P_PID, 470, 2.35, 0);                //pid初始化
+
     HAL_TIM_Base_Start_IT(&htim1);
 
     /* USER CODE END 2 */
