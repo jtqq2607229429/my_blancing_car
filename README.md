@@ -1,15 +1,31 @@
 我的平衡车
 ===============
-你好，这辆平衡车是我第一次全栈完成的小车，借鉴了一些平衡小车之家的代码，使用并级PID。<br>
-车体大概长这样：
-![](http://m.qpic.cn/psc?/V10wAnFY0tim2J/45NBuzDIW489QBoVep5mcc5Lw*CmgpOOZq*K.ptaDy0z.*WkpHBlz7ZaO1PwdSIyUDFMHoWiDq7OeHeC96p1QrF9b3H5NlKmbpoXTbuBiuM!/b&bo=OASgBQAAAAABF6k!&rf=viewer_4)
+你好，这辆平衡车是我第一次全栈完成的小车，借鉴了一些平衡小车之家的代码，以及别人开发的安卓APP，使用并级PID。<br>
+车体大概长这样：![](http://m.qpic.cn/psc?/V10wAnFY0tim2J/45NBuzDIW489QBoVep5mcc5Lw*CmgpOOZq*K.ptaDy0z.*WkpHBlz7ZaO1PwdSIyUDFMHoWiDq7OeHeC96p1QrF9b3H5NlKmbpoXTbuBiuM!/b&bo=OASgBQAAAAABF6k!&rf=viewer_4)
 ![](http://m.qpic.cn/psc?/V10wAnFY0tim2J/45NBuzDIW489QBoVep5mcX.0zlNVD*l7ezX6Rp7L0Rd.0Zg9n9BaM0.vTeSX3KY1l5qEB42FkCEYNV7*IIxsyCkAA*ez.TGOGehGBGnmxsU!/b&bo=OASgBQAAAAABF6k!&rf=viewer_4)
+* 蓝牙调试器长这样：![](http://m.qpic.cn/psc?/V10wAnFY0tim2J/45NBuzDIW489QBoVep5mcfj2VlweqfXcll95d6xnkG1fVCeJNjSflYS4P6yZFElqjnqXdKy78zTt7jdoUgxfRj.Wh17kMNb2Z3ZSriCIIU0!/b&bo=OAQkCQAAAAABFyE!&rf=viewer_4)
+* 可以调三个参数，所以先调好角度环再慢慢调其它的环所以在调试器上的数字都是乱的，本来想写flash进行保存，但觉得有点麻烦就算了。
+* 中间的图像是为了观察数据。
+* 下方是方向控制，前进后退左转右转。
+* 这个是蓝牙调试器，在应用商场上就有的下，简书上有教程，我就不多说了。
 ### 前期调试遇到的一些问题
 * 车剧烈抖动
 * 蓝牙收发卡死
 * 串口堵死
 ### 解决办法
-* 在调试直立环的时候车剧烈抖动，坚持不过2s，起初我以为是PID的问题，加上又写了蓝牙调试器这样方便的东西，就调了一天的PID.
-* 蓝牙调试器长这样：
-![](http://m.qpic.cn/psc?/V10wAnFY0tim2J/45NBuzDIW489QBoVep5mcfj2VlweqfXcll95d6xnkG1fVCeJNjSflYS4P6yZFElqjnqXdKy78zTt7jdoUgxfRj.Wh17kMNb2Z3ZSriCIIU0!/b&bo=OAQkCQAAAAABFyE!&rf=viewer_4)
-  
+* 在调试直立环的时候车剧烈抖动，坚持不过2s，起初我以为是PID的问题，加上抄了一款蓝牙调试器这样方便的东西，就调了一天的PID.但因为调试PID的过程中我发现，车反应极其不灵敏，然后我就开始怀疑代码的问题了。
+* 怀疑1：蓝牙解码时间过长<br>
+  由于起初蓝牙接受数据的解码计算代码写在5ms中断里所以第一个怀疑的是蓝牙接受太慢，导致我5ms中断被打断。所以我先进行了调整两个中断的优先级。
+  但这个举动直接导致我的蓝牙不工作了，我又把优先级调整了回去，后来我在想清楚中断执行过程后，就将接受数据的解码放在了while（1）函数里.此举有效.但是仍然有奇怪的问题<br>
+* 怀疑2：控制频率与采样频率<br>  
+  这个奇怪的问题就是车在刚启动的一段时间，能立住，随着时间的推移，大概有一个周期性的PID不可控时间，我起初百思不得其解，后来我就去看平衡小车之家的代码了。
+  直到我看到了他用上了mpu6050的int角来进行5ms中断后，我反应了过来，我的控制频率或许我的采集频率冲突了，于是我降低的采集频率，车体稳住了。但是会有前倾一直到加速跑动。到这一步，我知道我快成功了。<br>
+* 我开始调试速度环，加上去车在原地立住了，但是车老要前后前后的走，用pi调试了好久，仍然不能原地立住,后我去看平衡小车之家的代码，发现他并没有＋kP,但是我还是把P加上了，加了一点点车虽然还要前后走但是幅度不大了。<br>
+* 然后我开始调试转向环，，写了加上去，没了。车能控制了，也能前后跑了，但静于原地我做不到，，感觉机械上搭的不太好，板子也画的奇奇怪怪，但就做到这里吧，以后有时间再改吧。<br>
+* 蓝牙收发卡死，这个是我抄蓝牙调试器写的解码代码出现的。。我发现串口正常收到了数据，但是解码解错了，我有点懵逼，因为蓝牙调试器作者写的代码确实有点长了。。我也不想看，但是他逼着我去看了一波。<br>
+  然后我发现他只会接受一遍数据，并不会将接受错误的数据删除。我改了过来，然后我又去看蓝牙调试器作者写的解码代码，结果我发现他写的源码文件有些有解决这个问题，有些没有。我恰好拿到的是没有的，他也没说，暴怒。<br>
+* 串口堵死，，具体什么情况我也不知道，，有些时候莫名其妙串口不接受数据，只是串口不接受数据，然后我调低了发送速度，，仍然会卡死，且没有规律性。之后我就尝试自己来慢慢发。有效果。只要不一直连续发10000多个字节，也不会卡死。<br>
+  然后我就没管了。就这样吧，关于我在大二暑假第一次全栈做完的平衡小车。
+
+
+
