@@ -39,8 +39,9 @@
 /* USER CODE BEGIN PTD */
 float kP = 0, kI = 0, kD = 0;
 bool start_flag = false;  //启动
-extern long rdIndex, rxIndex, rx_pack_length;
-extern int Encoder_Left, Encoder_Right, Encoder;
+int motor, dir1, dir2 = 0;
+extern long rxIndex;
+extern int out;
 extern int t;
 TxPack txpack;
 RxPack rxpack;  //蓝牙使用结构体
@@ -121,7 +122,7 @@ int main(void) {
     OLED_Init();
     OLED_Clear();
     OLED_ShowString(0, 1, "hollo!", 12);
-    OLED_ShowNum(0,2,"kP:",12);
+    OLED_ShowString(0,2,"kP:",12);
     OLED_ShowString(0, 3, "kD:", 12);
     OLED_ShowString(0, 4, "kI:", 12);
 
@@ -137,11 +138,11 @@ int main(void) {
 
     HAL_UART_Receive_IT(&huart1, (uint8_t * ) & uartByte, 1);  //蓝牙初始化
 
-    PID_Init(&Rp_A_PID, 250, 0, 0.8);
-    PID_Init(&Rp_P_PID, 470, 2.35, 0);                //pid初始化
+    PID_Init(&BC_A_PID, 420, 0, 1.2);
+    PID_Init(&BC_P_PID, 550, 2.75, 1.1);                //pid初始化
+    PID_Init(&BC_T_PID,-9,0,-0.8);
 
     HAL_TIM_Base_Start_IT(&htim1);
-
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -151,38 +152,42 @@ int main(void) {
     while (1) {
         if (readValuePack(&rxpack)) {          //读蓝牙传输数据
             kP = (float) (rxpack.floats[0]);
-            kI = (float) (rxpack.floats[1]);
-            kD = (float) (rxpack.floats[2]);                  //获得一些设定值
+            kI = (float) (rxpack.floats[1]);               //这个是第二个速度PID，kP值.
+            kD = (float) (rxpack.floats[2]);               //获得pid设定值
+            motor = rxpack.integers[0];                    //获得速度值
+
+            dir1 = rxpack.integers[1];
+
             if (rxpack.bools[0]) {                            //将参数存入flash
                 save();
             }
             if (rxpack.bytes[0]) {                            //启动
                 start_flag = true;
-                PID_Init(&Rp_A_PID, kP, 0.0, kD);
-                PID_Init(&Rp_P_PID, kI, kI / 200.0, 0);
+//                PID_Init(&BC_A_PID, kP, 0.0, 1.2);
+//                PID_Init(&BC_P_PID, kI, kI / 200.0, kD);
+                PID_Init(&BC_T_PID,kP,0,kD);
             } else {
                 start_flag = false;
             }
         }
         //读蓝牙数据
 
-        OLED_ShowNum(36, 2, kP, 12);
-        OLED_ShowNum(36, 3, kI, 12);
-        OLED_ShowNum(36, 4, kD, 12);
-        OLED_ShowNum(36, 5, Pitch, 12);
-        OLED_ShowNum(36, 6, rxIndex, 12);
-        OLED_ShowNum(36, 7, t, 12);
-        txpack.floats[0] = gyro[1];
-        txpack.floats[1] = Encoder_Right;
-        txpack.floats[2] = Encoder_Left;
-        sendValuePack(&txpack);
-//        OLED_ShowNum(36, 3, (int)(Pitch), 12);
-//        HAL_Delay(10);
-//        OLED_ShowNum(36, 3, (int) (kI * 100), 12);
-//        OLED_ShowNum(36, 4, (int) (kD * 100), 12);
-//        OLED_ShowNum(36, 5, (int) (Pitch * 100), 12);
-        /* USER CODE END WHILE */
+        txpack.floats[0] = Pitch+2;
+        txpack.floats[1] = -2;
+//        if(Yaw>0)
+//            Yaw-=180;
+//        else
+//            Yaw+=180;
+        txpack.floats[2] = Yaw;
+        sendValuePack(&txpack);         //蓝牙调试信息
 
+        OLED_ShowNum(36, 2, kP, 12);
+        OLED_ShowNum(36, 3, kD, 12);
+        OLED_ShowNum(36, 4, kI, 12);
+        OLED_ShowNum(36, 5, dir1, 12);
+        OLED_ShowNum(36, 6, rxIndex, 12);
+        OLED_ShowNum(36, 7, t, 12);//屏幕显示信息
+        /* USER CODE END WHILE */
         /* USER CODE BEGIN 3 */
     }
 #pragma clang diagnostic pop

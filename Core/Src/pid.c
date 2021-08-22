@@ -3,8 +3,9 @@
 //
 #include "PID.h"
 
-PID_struct Rp_A_PID;
-PID_struct Rp_P_PID;
+PID_struct BC_A_PID;
+PID_struct BC_P_PID;
+PID_struct BC_T_PID;
 
 float get_error(float target, float now) {
     float error;
@@ -21,7 +22,6 @@ void PID_Init(PID_struct *PID, float kp, float ki, float kd)//  pid参数设置
     PID->Ki = ki;
     PID->Kd = kd;
     PID->out = 0;
-
 }
 
 int PID_calc_A(PID_struct *PID, float e, float g) {
@@ -31,10 +31,10 @@ int PID_calc_A(PID_struct *PID, float e, float g) {
 }
 
 int PID_calc_P(PID_struct *PID, int encode) {
-    static float  bias;
+    static float bias;
 
-    bias *= 0.7;
-    bias += encode * 0.3;
+    bias *= 0.8;
+    bias += encode * 0.2;
 
     PID->integral += bias;
     if (PID->integral >= 10000)
@@ -42,10 +42,18 @@ int PID_calc_P(PID_struct *PID, int encode) {
     if (PID->integral <= -10000)
         PID->integral = -10000;
 
-    PID->out = PID->Kp * bias + (PID->Kp/200.0) * PID->integral;
+    PID->out = PID->Kp * bias + (PID->Kp / 200.0) * PID->integral + PID->Kd * (bias - PID->err_last);
 
+    PID->err_last = bias;
     return PID->out;
 }
+
+int PID_calc_T(PID_struct *PID, float z , float g) {
+    int out;
+    out = (int)(PID->Kp*z+PID->Kd*g);
+    return out;
+}
+
 void PID_Clear(PID_struct *PID) {
     PID->err = 0;    //PID误差
     PID->err_last = 0;   //上一次误差

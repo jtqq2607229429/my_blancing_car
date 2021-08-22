@@ -13,12 +13,14 @@ typedef struct pid{
     float integral;            //累计误差
 }PID_struct;
 
-extern PID_struct Rp_A_PID;
-extern PID_struct Rp_P_PID;
+extern PID_struct BC_A_PID;
+extern PID_struct BC_P_PID;
+extern PID_struct BC_T_PID;
 
 void PID_Init(PID_struct *PID,float kp,float ki,float kd);
 int PID_calc_A(PID_struct *PID,float e,float g);
 int PID_calc_P(PID_struct *PID,int encode);
+int PID_calc_T(PID_struct *PID,float z ,float g);
 float get_error(float target,float now);
 void PID_Clear(PID_struct *PID);
 
