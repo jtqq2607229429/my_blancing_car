@@ -10,4 +10,6 @@
 * 串口堵死
 ### 解决办法
 * 在调试直立环的时候车剧烈抖动，坚持不过2s，起初我以为是PID的问题，加上又写了蓝牙调试器这样方便的东西，就调了一天的PID.
+* 蓝牙调试器长这样：
+![](http://m.qpic.cn/psc?/V10wAnFY0tim2J/45NBuzDIW489QBoVep5mcfj2VlweqfXcll95d6xnkG1fVCeJNjSflYS4P6yZFElqjnqXdKy78zTt7jdoUgxfRj.Wh17kMNb2Z3ZSriCIIU0!/b&bo=OAQkCQAAAAABFyE!&rf=viewer_4)
   
