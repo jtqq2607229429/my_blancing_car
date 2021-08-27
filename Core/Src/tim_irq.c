@@ -12,6 +12,7 @@
 #include "stdbool.h"
 #include "pid.h"
 #include "motor.h"
+#include "usart.h"
 
 extern float kP, kI, kD;
 extern bool start_flag;
@@ -41,8 +42,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
             out2 = PID_calc_P(&BC_P_PID, Encoder);
             out3 = PID_calc_T(&BC_T_PID, t_yaw+dir1, gyro[2]);
             out = out1 + out2;//out1-out2;
-            motor1(-out + out3);
-            motor2(out + out3);
+
+            motor1(out1);
+            motor2(out1);
+      //      motor1(-out + out3);
+      //     motor2(out + out3);
         }
 
         if (Pitch <= -45 || Pitch >= 45 || start_flag == false) {
