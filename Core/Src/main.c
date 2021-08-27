@@ -38,12 +38,13 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 float kP = 0, kI = 0, kD = 0;
+float kP_p = 0, kI_p = 0, kD_p = 0;
+float kP_t = 0, kI_t = 0, kD_t = 0;
 bool start_flag = false;  //启动
 int motor, dir1, dir2 = 0;
 extern long rxIndex;
 extern int out;
 extern int t;
-extern int halstate;
 TxPack txpack;
 RxPack rxpack;  //蓝牙使用结构体
 
@@ -159,8 +160,14 @@ int main(void)
             kP = (float) (rxpack.floats[0]);
             kI = (float) (rxpack.floats[1]);               //这个是第二个速度PID，kP值.
             kD = (float) (rxpack.floats[2]);               //获得pid设定值
-            motor = rxpack.integers[0];                    //获得速度值
+            kP_p = (float)(rxpack.floats[3]);
+            kD_p = (float) (rxpack.floats[5]);
+            kI_p = (float) (rxpack.floats[4]);               //这个是第二个速度PID，kP值.
+            kP_t = (float) (rxpack.floats[6]);               //获得pid设定值
+            kD_t = (float)(rxpack.floats[8]);
+            kI_t = (float)(rxpack.floats[7]);
 
+            motor = rxpack.integers[0];                    //获得速度值
             dir1 = rxpack.integers[1];
 
             if (rxpack.bools[0]) {                            //将参数存入flash
@@ -169,15 +176,15 @@ int main(void)
             if (rxpack.bytes[0]) {                            //启动
                 start_flag = true;
                 PID_Init(&BC_A_PID, kP, kI, kD);
-//                PID_Init(&BC_P_PID, kI, kI / 200.0, kD);
-//                PID_Init(&BC_T_PID, kP, 0, kD);
+                PID_Init(&BC_P_PID, kP_p*200, kP_p, kD);
+                PID_Init(&BC_T_PID, kP_t, kI_t, kD_t);
             } else {
                 start_flag = false;
             }
         }
         //读蓝牙数据
-        txpack.floats[0] = Pitch + 2;
-        txpack.floats[1] = -2;
+        txpack.floats[0] = Pitch ;
+        txpack.floats[1] = -0.2;
         txpack.floats[2] = Yaw;
         sendValuePack(&txpack);         //蓝牙调试信息
 

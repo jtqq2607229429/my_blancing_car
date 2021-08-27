@@ -34,7 +34,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
         if (Read_DMP() == 0 && t >= 200 &&
             start_flag == true)                                       //每5ms读一次6050数据 给6050初始化时间
         {
-            a_pitch = get_error(-1.2, Pitch);
+            a_pitch = get_error(0.2, Pitch);
             t_yaw = Yaw;
             a_gyro = gyro[1];
 
@@ -43,10 +43,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
             out3 = PID_calc_T(&BC_T_PID, t_yaw+dir1, gyro[2]);
             out = out1 + out2;//out1-out2;
 
-            motor1(out1);
-            motor2(out1);
-      //      motor1(-out + out3);
-      //     motor2(out + out3);
+//            motor1(-out1);
+//            motor2(out1);
+            motor1(-out + out3);
+           motor2(out + out3);
         }
 
         if (Pitch <= -45 || Pitch >= 45 || start_flag == false) {
